@@ -10,7 +10,7 @@
  */
 
 pm_Loader::registerAutoload();
-pm_Context::init('uddomainreselling');
+pm_Context::init('uddns');
 if (!pm_Settings::get('enabled')) {
     exit(0);
 }
