@@ -1,6 +1,6 @@
 <?php
 pm_Loader::registerAutoload();
-pm_Context::init('uddomainreselling');
+pm_Context::init('uddns');
 try {
     $script = PRODUCT_ROOT . '/bin/extension --exec ' . pm_Context::getModuleId() . ' uddns.php';
     $result = pm_ApiCli::call('server_dns', array('--enable-custom-backend', $script));
