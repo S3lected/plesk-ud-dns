@@ -1,6 +1,6 @@
 <?php
 pm_Loader::registerAutoload();
-pm_Context::init('buddyns');
+pm_Context::init('uddns');
 try {
     $result = pm_ApiCli::call('server_dns', array('--disable-custom-backend'));
 } catch (pm_Exception $e) {
