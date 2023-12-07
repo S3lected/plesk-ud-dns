@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright. SelectedWork - Matthias Kiefer. -->
+<module>
+  <id>united-domains-reselling-extension</id>
+  <name>Transfer to united-domains reselling</name>
+  <description>Transfer DNS to united-domains reselling</description>
+  <version>1.0</version>
+  <release>1</release>
+  <vendor>SelectedWork</vendor>
+  <url>http://selectedwork.de</url>
+  <plesk_min_version>11.0</plesk_min_version>
+</module>

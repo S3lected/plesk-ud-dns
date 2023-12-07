@@ -1,66 +1,69 @@
 <?php
+
 /**
  * ud domainreselling API Extension for Plesk
  * Written by Matthias Kiefer
  * 
  * API: https://api.domainreselling.de/api/
  * 
- * This script is added as --custom-backend for Plesk DNS in post-install.php
- * and removed in pre-uninstall.php respectively.
+ * This script is added as --custom-backend for Plesk DNS in post-install.php and removed in pre-uninstall.php respectively.
  */
 
 pm_Loader::registerAutoload();
-pm_Context::init('uddns');
-if (!pm_Settings::get('enabled')) {
+pm_Context::init('united-domains-reselling-extension');
+
+if (!pm_Settings::get('enabledCheckbox')) {
+    pm_Log::debug("UDDNS not enabled.");
     exit(0);
 }
 
-/**
- * Get credentials
- */
-$LOGIN = 'selected.work';
-$PASS = '1234';
-
-
 // https://api.domainreselling.de/api/call.cgi?s_login=selected.work&s_pw=*****&s_format=jsonpretty&command=CheckDomain&domain=isthisdomainfree.com
+// https://api.domainreselling.de/api/call.cgi?s_login=reseller.de&s_pw=secret&command=command& parameter1=value1&parameter2=value2&parameter3=value3...
+function updateDNSZone($zoneName, $zone)
+{
+    $zoneNameTrimmed = rtrim($zoneName, '.');
+    pm_Log::debug("Update DNS Zone {$zoneName} \n");
 
-function updateDNSZone($zoneName, $zone) {
-    $zoneNameTrimmed = rtrim($zoneName,'.');
-        
     $service_url = 'https://api.domainreselling.de/api/call.cgi';
-    $login_url = '?s_login=' . $LOGIN . '&s_pw=' . $PASS;
 
-    $zone_url = 'command=UpdateDNSZone&dnszone=' . $zoneNameTrimmed;
+    $fields = [
+        's_login' => pm_Settings::get('loginNameText'),
+        's_pw' => pm_Settings::getDecrypted('passwordText'),
+        'command' => 'UpdateDNSZone',
+        'dnszone' => $zoneNameTrimmed
+    ];
 
-    $rr_url = '';
-
-           /**
-             * Add Resource records to zone
-             */
-
-             $i = 0;
-            foreach($zone->rr as $rr) {
-                $rr_url .= '&' . $i . ' = ' . $rr->host . ' IN ' . $rr->type . ' ' . $rr->opt . ' ' . $rr->value;
-                $i++;
-            }
-
-        $curl_uri = $service_url . $login_url . $zone_url . $rr_url;
-
-        $curl = curl_init($curl_uri);
-
-        $curl_response = curl_exec($curl);
-        if ($curl_response === false) {
-            $info = curl_getinfo($curl);
-            curl_close($curl); 
-            return false;
-        } else {
-            curl_close($curl);
-            return true;
-        }
-
-
+    $i = 0;
+    foreach ($zone->rr as $rr) {
+        $value = $rr->host . ' IN ' . $rr->type . ' ' . $rr->opt . ' ' . $rr->value;
+        $fields['rr'.$i] = $value;
+        $i++;
     }
 
+    $options = array(
+        CURLOPT_CUSTOMREQUEST => 'GET',
+        CURLOPT_RETURNTRANSFER => true  // return web page
+    ); 
+
+    $postvars = http_build_query($fields);
+    $uri = $service_url.'?'.$postvars;  //. $login_url . $zone_url . $rr_url;
+    $ch = curl_init($uri);
+    curl_setopt_array($ch, $options);
+    $content = curl_exec($ch);
+
+    if (!$content){
+        $error = curl_error($ch);
+        $info = curl_getinfo($ch);
+        die("cURL request failed, error = {$error}; info = " . print_r($info, true));
+    }
+    if(curl_errno($ch)){
+        pm_Log::error(curl_error($ch));
+    } else {
+        pm_Log::debug(print_r($content, true));
+    }
+
+    curl_close($ch);
+}
 
 
 /**
@@ -123,7 +126,7 @@ foreach ($data as $record) {
     $zoneName = $record->zone->name;
     $recordsTTL = $record->zone->soa->ttl;
     switch ($record->command) {
-        /**
+            /**
          * Zone created or updated
          */
         case 'create':
@@ -131,6 +134,5 @@ foreach ($data as $record) {
             updateDNSZone($zoneName, $record->zone);
 
         case 'delete':
-         
     }
 }

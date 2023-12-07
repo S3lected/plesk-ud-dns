@@ -1,0 +1,5 @@
+# Transfer to united-domains reselling extension for Plesk
+
+The "Transfer to united-domains reselling extension for Plesk" is a custom extension designed to facilitate the integration of Plesk with uddns. This extension enables Plesk to work with a third-party DNS service by using a specified integration script. 
+
+This Plesk extension provides a robust solution for those seeking a highly available and scalable Domain Name System (DNS) web service via uddns. It demonstrates how to incorporate a third-party DNS service into Plesk, thus offering users the flexibility to choose their preferred DNS service provider.

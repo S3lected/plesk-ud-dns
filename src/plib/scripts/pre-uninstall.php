@@ -1,6 +1,7 @@
 <?php
 pm_Loader::registerAutoload();
-pm_Context::init('uddns');
+pm_Context::init('united-domains-reselling-extension');
+
 try {
     $result = pm_ApiCli::call('server_dns', array('--disable-custom-backend'));
 } catch (pm_Exception $e) {
